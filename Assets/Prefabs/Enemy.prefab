@@ -293,3 +293,4 @@ MonoBehaviour:
   points:
   - {fileID: 7708030099836637252}
   - {fileID: 6438234679482074379}
+  deathSound: {fileID: 8300000, guid: 3808c529637064b418f345803dcb4c2f, type: 3}

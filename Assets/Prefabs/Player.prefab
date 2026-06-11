@@ -363,5 +363,9 @@ MonoBehaviour:
     m_Bits: 8
   extraJumpValue: 1
   extraJumpsFromPellets: 0
-  projectilePrefab: {fileID: 0}
+  jumpSound: {fileID: 8300000, guid: 3f2d77ad7531c414d9032e7a1c2e4290, type: 3}
+  shootSound: {fileID: 8300000, guid: f4465e125afb6bb45810b3ddf7e35617, type: 3}
+  deathSound: {fileID: 8300000, guid: 003daf03f075701459f70442238c11bc, type: 3}
+  pelletCollectSound: {fileID: 0}
+  projectilePrefab: {fileID: 7740403664614054103, guid: 892ba39a66be77e42ae286d2b03bd3d4, type: 3}
   shootPoint: {fileID: 6456100986479803437}

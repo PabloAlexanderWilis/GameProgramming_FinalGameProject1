@@ -25,6 +25,13 @@ public class Player : MonoBehaviour
     private Rigidbody2D rb;
     private Animator animator;
     private SpriteRenderer spriteRenderer;
+    private AudioSource audioSource;
+
+    [Header("Sound Effects")]
+    public AudioClip jumpSound;
+    public AudioClip shootSound;
+    public AudioClip deathSound;
+    public AudioClip pelletCollectSound;
 
     void Start()
     {
@@ -32,6 +39,11 @@ public class Player : MonoBehaviour
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         extraJumps = extraJumpValue;
+
+        // Create audio source
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.volume = 0.7f;
 
         // ALWAYS RE-ESTABLISH SINGLETON
         Instance = this;
@@ -58,18 +70,21 @@ public class Player : MonoBehaviour
             if (IsGrounded())
             {
                 rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-                extraJumps = extraJumpValue; // RESET EXTRA JUMPS WHEN GROUNDED
-                extraJumpsFromPellets = 0;   // CLEAR PELLET JUMPS WHEN GROUNDED
+                extraJumps = extraJumpValue;
+                extraJumpsFromPellets = 0;
+                PlaySound(jumpSound);
             }
-            else if (extraJumps > 0) // USE REGULAR EXTRA JUMPS FIRST
+            else if (extraJumps > 0)
             {
                 rb.velocity = new Vector2(rb.velocity.x, jumpForce);
                 extraJumps--;
+                PlaySound(jumpSound);
             }
-            else if (extraJumpsFromPellets > 0) // USE PELLET JUMPS SECOND
+            else if (extraJumpsFromPellets > 0)
             {
                 rb.velocity = new Vector2(rb.velocity.x, jumpForce);
                 extraJumpsFromPellets--;
+                PlaySound(jumpSound);
             }
         }
 
@@ -77,13 +92,11 @@ public class Player : MonoBehaviour
         {
             if (UniversalSaveManager.IsEmpty())
             {
-                // No checkpoint - reload scene
                 UnityEngine.SceneManagement.SceneManager.LoadScene(
                     UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
             }
             else
             {
-                // Load full scene state (includes player position)
                 UniversalSaveManager.AutoLoadState();
 
                 if (GameManager.Instance != null)
@@ -96,6 +109,7 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.L))
         {
             ShootProjectile();
+            PlaySound(shootSound);
         }
 
         SetAnimation(moveInput);
@@ -120,18 +134,17 @@ public class Player : MonoBehaviour
         {
             GameObject proj = Instantiate(projectilePrefab, shootPoint.position, Quaternion.identity);
 
-            // GET THE RIGIDBODY FROM THE INSTANTIATED PROJECTILE, NOT FROM SHOOTPOINT
             Rigidbody2D projRb = proj.GetComponent<Rigidbody2D>();
 
-            if (projRb != null) // Check if projectile has Rigidbody2D
+            if (projRb != null)
             {
                 if (spriteRenderer.flipX)
                 {
-                    projRb.velocity = new Vector2(-10, 0); // Shoot left
+                    projRb.velocity = new Vector2(-10, 0);
                 }
                 else
                 {
-                    projRb.velocity = new Vector2(10, 0); // Shoot right
+                    projRb.velocity = new Vector2(10, 0);
                 }
             }
             else
@@ -163,7 +176,7 @@ public class Player : MonoBehaviour
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Hazard") ||
-            collision.gameObject.CompareTag("Enemy")|| collision.gameObject.CompareTag("Damage"))
+            collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("Damage"))
         {
             Die();
         }
@@ -172,6 +185,7 @@ public class Player : MonoBehaviour
     void Die()
     {
         totalDeaths++;
+        PlaySound(deathSound);
 
         Time.timeScale = 1f;
         SpawnBloodParticles();
@@ -203,6 +217,14 @@ public class Player : MonoBehaviour
                     );
                 }
             }
+        }
+    }
+
+    void PlaySound(AudioClip clip)
+    {
+        if (clip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clip);
         }
     }
 }

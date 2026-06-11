@@ -7,34 +7,36 @@ public class SceneMusicManager : MonoBehaviour
     private AudioSource audioSource;
 
     [Header("Music Settings")]
-    public AudioClip sceneMusic; 
-    public string sceneName; 
+    public AudioClip sceneMusic;
+    public string sceneName;
     public bool loopMusic = true;
 
     void Awake()
     {
-        if (Instance == null)
+        SceneMusicManager[] managers = FindObjectsOfType<SceneMusicManager>();
+        if (managers.Length > 1)
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-
-            audioSource = GetComponent<AudioSource>();
-            if (audioSource == null)
+            foreach (SceneMusicManager manager in managers)
             {
-                audioSource = gameObject.AddComponent<AudioSource>();
-            }
-
-            audioSource.clip = sceneMusic;
-            audioSource.loop = loopMusic;
-        }
-        else
-        {
-            if (this != Instance)
-            {
-                Destroy(gameObject);
-                return;
+                if (manager != this)
+                {
+                    Destroy(manager.gameObject);
+                }
             }
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        audioSource.clip = sceneMusic;
+        audioSource.loop = loopMusic;
+        audioSource.playOnAwake = false;
     }
 
     void OnEnable()
@@ -47,13 +49,12 @@ public class SceneMusicManager : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, LoadSceneMode mode)
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (scene.name == sceneName)
         {
             if (audioSource != null && audioSource.clip != null)
             {
-                audioSource.clip = sceneMusic;
                 if (!audioSource.isPlaying)
                 {
                     audioSource.Play();
